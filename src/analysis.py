@@ -9,18 +9,31 @@ def analysis(file_name):
 
     df.rename(columns={'t': 't_1', 'y': 'target'}, inplace=True)
 
-    X = df[['t_1', 't_2']]
+    X = df[['t_2', 't_1']]
     y = df['target']
 
     model = LinearRegression()
     model.fit(X, y)
 
-    coef = model.coef_
+    loss = ((model.predict(X) - y) ** 2).sum()
 
-    v0 = coef[0]
-    a = coef[1] * 2
+    # print(f"{file_name} & {model.coef_[0]:.2f} & {model.coef_[1]:.2f} & {model.intercept_:.2f} & {loss:.8f} \\\\")
 
-    print([a, v0, model.intercept_])
+    df = pd.read_csv(file_name)
+
+    df.rename(columns={'x': 'target'}, inplace=True)
+
+    X = df[['t']]
+    y = df['target']
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    loss = ((model.predict(X.values) - y) ** 2).sum()
+
+    print(f"{file_name} & {model.coef_[0]:.2f} & {model.intercept_:.2f} & {loss:.8f} \\\\")
+
+
 
 for file in os.listdir('data'):
     if file.endswith('.csv'):

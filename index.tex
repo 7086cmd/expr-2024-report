@@ -9,6 +9,34 @@
 \usepackage{hyperref}
 \usepackage{siunitx}
 \usepackage{tikz}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{appendix}
+\lstset{
+    basicstyle = \sffamily,
+    keywordstyle = \bfseries,
+    commentstyle = \rmfamily\itshape,
+    stringstyle = \ttfamily,
+    flexiblecolumns,
+    numbers = left,
+    showspaces = false,
+    numberstyle = \zihao{-5}\ttfamily,
+    showstringspaces = false,
+    captionpos = t,
+    frame = lrtb,
+}
+\lstdefinestyle{Python}{
+    language = Python,
+    basicstyle = \zihao{-5}\ttfamily,
+    numberstyle = \zihao{-5}\ttfamily,
+    keywordstyle = \color{blue},
+    keywordstyle = [2] \color{teal},
+    stringstyle = \color{magenta},
+    commentstyle = \color{red}\ttfamily,
+    breaklines = true,
+    columns = fixed,
+    basewidth = 0.5em,
+}
 \usepackage{fontspec}
 \usepackage{epsfig}
 \fontspec{Times New Roman}
@@ -19,7 +47,7 @@
 \tikzstyle{spring}=[thick,decorate,decoration={zigzag,pre length=0.1cm,post
   length=0.1cm,segment length=6}]
 
-\newcommand{\keywords}[1]{\textbf{关键词} #1}
+\newcommand{\keywords}[1]{\textbf{关键词} \quad #1}
 
 \title{``魔板'' 加持下的平抛运动定理验证实验}
 \author{吴承宇\ 20230616 \thanks{Ethan Goh (\texttt{<7086cmd@gmail.com>}). 本文的主要撰写者, 同时承担数据分析, 软件配置操作.} \and 陈麒泽\ 20231204 \thanks{基本上贡献相等. 搭建了实验模型, 参与了实验设计和文章撰写.} \and 胡铭轩\ 20231207 \footnotemark[2] \and 卢柯忻\ 20230534 \footnotemark[2] \and 张函毓\ 20231237 \footnotemark[2] \and 章嘉乐\ 20231226 \footnotemark[2]}
@@ -40,6 +68,8 @@
 \keywords{平抛运动; 实验改进; DISLab ``魔板''实验; 回归模型; 验证实验}
 
 \tableofcontents
+
+\newpage
 
 \section{问题分析}
 
@@ -76,7 +106,7 @@
 \begin{equation}
     \begin{cases}
         x = v_{0\parallel}t \\
-        y = v_{0\perp}t - \frac{1}{2}gt^2
+        y = v_{0\perp}t - \dfrac{1}{2}gt^2
     \end{cases}
 \end{equation}
 
@@ -131,6 +161,8 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\textwidth]{figures/plot1.eps}
+    \caption{实验数据散点图}
+    \label{fig:scatter-plot-1}
 \end{figure}
 
 因此, 我们对于所有的数据进行绘制, 得到如下的散点图:
@@ -138,10 +170,183 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\textwidth]{figures/plot-all.eps}
+    \caption{实验犬必怒数据散点图}
+    \label{fig:scatter-plot-2}
 \end{figure}
 
 通过散点图的绘制, 发现实验数据 \texttt{2024-05-17(16-56-33).csv}, \texttt{2024-05-17(16-57-14).csv} 和 \texttt{2024-05-17(16-58-18).csv} 两份数据较有准确性, 因此采用这两组数据进行线性回归拟合来进行数据分析.
 
 因此, 笔者通过 \texttt{scikit-learn} 的 \texttt{LinearRegression} 模型分别对于 $x - t$ (水平方向) 和 $y - t$ (竖直方向) 进行回归分析.
+
+\subsection{水平方向线性回归分析}
+
+通过匀加速运动的公式, 我们假设:
+
+\begin{equation}
+    \hat{x} = \theta_2 t^2 + \theta_1 t + \theta_0
+\end{equation}
+
+则容易发现, $a = 2\theta_2$, $v_0 = \theta_1 = 0$. 通过回归分析, 可以得到如下的参数:
+
+\begin{table}[H]
+    \small
+    \centering
+    \begin{tabular}{ccccc}
+        \hline
+        \textbf{数据} & $\theta_2$ / \si{\meter\per\second\squared} & $\theta_1$ / \si{\meter\per\second} & $\theta_0$ / \si{\meter} & \textbf{Loss} \\
+        \hline
+        data/2024-05-17(16-57-14).csv & 4.88 & 0.08 & -0.00 & 0.00000775 \\
+        data/2024-05-17(16-56-33).csv & 4.44 & 0.12 & -0.00 & 0.00014052 \\
+        data/2024-05-17(16-58-18).csv & 4.81 & -7.28 & 2.75 & 0.00000277 \\
+        data/2024-05-17(16-57-46).csv & 0.93 & 0.33 & -0.29 & 0.00112636 \\
+        \hline
+    \end{tabular}
+    \caption{水平方向线性回归分析}
+    \label{tab:linear-regression-x}
+\end{table}
+
+数据 \texttt{data/2024-05-17(16-57-46).csv} 和 \texttt{data/2024-05-17(16-58-18).csv} 存在较大误差, 因此不予考虑. 回归模型的误差函数小, 拟合效果较好.
+
+取数据 \texttt{data/2024-05-17(16-57-14).csv} 为例, 绘制出拟合图像如下:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/plot-x-regression.eps}
+    \caption{水平方向线性回归分析}
+    \label{fig:linear-regression-x}
+\end{figure}
+
+则水平方向的重力加速度 $\mathrm g=2\theta_2 = \SI{9.76}{\meter\per\second\squared}$. 根据数据, \ang{30} N 位置的重力加速度一般为 \SI{9.794}{\meter\per\second\squared}, 因此实验数据较为准确.
+
+\subsection{竖直方向线性回归分析}
+
+根据平抛运动的定理, 竖直运动基本上为匀速直线运动. 因此, 我们假设:
+
+\begin{equation}
+    \hat{y} = \theta_1 t + \theta_0
+\end{equation}
+
+通过对于数据的回归分析, 可以得到如下的参数:
+
+\begin{table}[H]
+    \small
+    \centering
+    \begin{tabular}{ccccc}
+        \hline
+        \textbf{数据} & $\theta_1$ / \si{\meter\per\second} & $\theta_0$ / \si{\meter} & \textbf{Loss} \\
+        \hline
+        data/2024-05-17(16-57-14).csv & 1.75 & 0.06 & 0.00001409 \\
+        data/2024-05-17(16-56-33).csv & 1.79 & 0.05 & 0.00006406 \\
+        data/2024-05-17(16-58-18).csv & 1.18 & -0.87 & 0.00000526 \\
+        data/2024-05-17(16-57-46).csv & 0.60 & -0.21 & 0.00025321 \\
+        \hline
+    \end{tabular}
+    \caption{竖直方向线性回归分析}
+    \label{tab:linear-regression-y}
+\end{table}
+
+则容易发现, 数据 \texttt{data/2024-05-17(16-57-46).csv} 存在较大误差, 因此不予考虑. 回归模型的误差函数同样小, 拟合效果较好.
+
+以 \texttt{data/2024-05-17(16-57-14).csv} 为例, 绘制出拟合图像如下:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/plot-y-regression.eps}
+    \caption{竖直方向线性回归分析}
+    \label{fig:linear-regression-y}
+\end{figure}
+
+\subsection{能量学角度分析}
+
+根据动能定理 $\dfrac{1}{2}mv^2 = mgh$, 可以通过功能转换的方法来验证数据的准确性. 该实验装置 \qty{50}{\hertz} 的频率, 可以使得接近于瞬时速度. 但由于笔者精力有限, 未能进行更多的数据分析.
+
+\section{实验结论}
+
+物体做平抛运动时, 在水平方向上是匀速直线运动, 在竖直方向上是匀加速直线运动. 通过 ``魔板'' 系统, 可以方便的获取实验数据, 并通过回归模型进行分析, 以验证平抛运动的定理.
+
+\section{实验改进}
+
+在该实验中, 通过 ``魔板'' 系统, 可以方便的获取实验数据, 并通过回归模型进行分析, 以验证平抛运动的定理. 但是, 使用 ``魔板'' 系统时, 也会存在记录时间和放出时间的误差, 这可能导致了诸如 \texttt{16-57-46} 组数据的问题. 在实际使用中, 可以通过更加精确的时间配合, 甚至自动进行数据记录, 以减少误差.
+
+同时, ``魔板'' 系统自身存在一定摩擦. 在实验中, 可以通过水平方向的上的力场进行控制. 以及, 进行平抛运动的物体较轻, 且非流线型, 这可能导致了空气阻力对实验产生的影响.
+
+\section{实验拓展}
+
+该实验也可以用于考虑空气阻力的抛体运动, 以及复合场中的抛体运动进行分析. 尽管本身 ``魔板'' 系统为磁吸装置, 但是可以通过更换不同的感应物块, 以及更换不同的磁场, 以进行不同的实验.
+
+\newpage
+
+\bibliographystyle{plain}
+\bibliography{references}
+\nocite{*}
+
+\newpage
+
+\section*{附录}
+
+\begin{appendices}
+
+\section{实验数据}
+
+实验数据保存在 \texttt{data} 文件夹中, 其中包含了 $4$ 组数据, 分别为:
+
+\begin{itemize}
+    \item \texttt{2024-05-17(16-56-33).csv}
+    \item \texttt{2024-05-17(16-57-14).csv}
+    \item \texttt{2024-05-17(16-57-46).csv}
+    \item \texttt{2024-05-17(16-58-18).csv}
+\end{itemize}
+
+\subsection{数据格式}
+
+数据格式如下:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ccc}
+        \hline
+        \textbf{时间} & \textbf{$x$} & \textbf{$y$} \\
+        \hline
+        0.00 & 0.00 & 0.00 \\
+        0.02 & 0.00 & 0.00 \\
+        0.04 & 0.00 & 0.00 \\
+        0.06 & 0.00 & 0.00 \\
+        0.08 & 0.00 & 0.00 \\
+        \hline
+    \end{tabular}
+    \caption{数据格式}
+\end{table}
+
+\section{数据分析代码}
+
+代码分为绘图和回归两部分, 代码如下:
+
+\subsection{绘图}
+
+\subsubsection{绘制单个散点图}
+
+\lstinputlisting[style=Python]{src/plot.py}
+
+\subsubsection{绘制所有散点图}
+
+\lstinputlisting[style=Python]{src/plot-all.py}
+
+\subsubsection{绘制 $x-t$ 回归图}
+
+\lstinputlisting[style=Python]{src/plot-x-regression.py}
+
+\subsubsection{绘制 $y-t$ 回归图}
+
+\lstinputlisting[style=Python]{src/plot-y-regression.py}
+
+\subsection{回归}
+
+\lstinputlisting[style=Python]{src/analysis.py}
+
+\section{仓库}
+
+本文的仓库地址为 \url{https://github.com/7086cmd/expr-2024-report.git}.
+
+\end{appendices}
 
 \end{document}
