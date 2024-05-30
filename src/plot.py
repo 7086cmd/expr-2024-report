@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df = pd.read_csv('data/2024-05-17(16-56-33).csv')
+df = pd.read_csv('data/2024-05-17(16-57-14).csv')
 
 plt.scatter(df['x'], df['y'], label='tag')
 plt.xlabel('x-axis')
